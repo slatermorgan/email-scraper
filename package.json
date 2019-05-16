@@ -1,0 +1,17 @@
+{
+	"name": "webscraper",
+	"version": "1.0.0",
+	"description": "simple webscraper used by feeding email addresses and returning contact info",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "slatermorgan",
+	"license": "ISC",
+	"dependencies": {
+		"cheerio": "^1.0.0-rc.3",
+		"knwl.js": "^1.0.2",
+		"request": "^2.88.0",
+		"require": "^2.4.20"
+	}
+}

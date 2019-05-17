@@ -17,49 +17,59 @@ request(url, function (err, res, html) {
 
         const $ = cheerio.load(html);
         const body = $("body");
-        webPageText = body.text();
-        // console.log(webPageText);
 
-        // search and parse out contact info
+
+        // Parse all links from page
+        // dataStr = "";
+        //
+        // $("a").each(function (i, el) {
+        //     const link = $(el).attr("href");
+        //     dataStr += " " + link + " ";
+        // });
+        //
+        // webPageText = dataStr
+        webPageText = body.text();
+        console.log(webPageText)
         knwlInstance.init(webPageText);
 
-        // Email
-        var foundEmail = knwlInstance.get("emails");
+        // calls scraper methods
+        scraper.emails();
+        scraper.phones();
+        scraper.links();
 
-        if (foundEmail.length === 0) {
-            console.log("0 email addresses found")
-        } else {
-            emails = foundEmail[0].address;
-            console.log("Emails:")
-            console.log(emails);
-        }
-
-        // Address
-        var foundAddress = knwlInstance.get('places');
-
-        if (foundAddress.length === 0) {
-            console.log("0 addresses found")
-        } else {
-            address = foundAddress[0]
-            console.log(foundAddress);
-        }
-
-        // Phone
-        var foundPhone = knwlInstance.get('phones');
-
-        if (foundPhone.length === 0) {
-            console.log("0 phone numbers found")
-        } else {
-            phone = foundPhone[0]
-            console.log(foundPhone);
-        }
-
-    } else {
+      } else {
         console.log(err);
-    }
+      }
 });
 
 function getDomain(str) {
     var n = str.indexOf("@");
     return str.substring(n + 1, str.length);
 }
+
+var scraper = {
+    emails: function() {
+        var foundItems = knwlInstance.get('emails');
+        if (foundItems.length === 0) {
+          console.log("0 links found")
+        } else {
+          console.log(foundItems);
+        }
+    },
+    links: function() {
+      var foundItems = knwlInstance.get('links');
+      if (foundItems.length === 0) {
+        console.log("0 links found")
+      } else {
+        console.log(foundItems[0]);
+      }
+    },
+    phones: function() {
+      var foundItems = knwlInstance.get('phones');
+      if (foundItems.length === 0) {
+        console.log("0 phone numbers found")
+      } else {
+        console.log(foundItems);
+      }
+    }
+};

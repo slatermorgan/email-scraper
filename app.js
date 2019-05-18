@@ -7,9 +7,7 @@ const cheerio = require("cheerio"),
 var knwlInstance = new Knwl("english"); //specifies language for Knwl
 
 var emailAddress = "someone@canddi.com"
-
 var url = "https://www." + getDomain(emailAddress);
-
 
 // Request web domain
 request(url, function (err, res, html) {
@@ -19,21 +17,36 @@ request(url, function (err, res, html) {
         const body = $("body");
 
         dataStr = "";
-
         $("a").each(function (i, el) {
             const link = $(el).attr("href");
             dataStr += " " + link + " ";
+            // console.log(link);
         });
 
+        // webpage data
         webPageLinks = dataStr
-
         webPageText = body.html();
-        console.log(webPageText)
 
-        // calls scraper methods
-        find.emails(webPageText);
-        find.phones(webPageText);
-        find.links(webPageLinks);
+
+        // calls finder methods
+        foundEmails = find.emails(webPageText);
+        foundPhones = find.phones(webPageText);
+        foundLinks = find.links(webPageLinks);
+
+        // attempt to find links and put in array
+        parsedLinks = []
+        for (var i=0; i<foundLinks.length; i++){
+            parsedLinks.push(foundLinks[i]['link'])
+        }
+
+        // Social search
+        for (var i=0; i<parsedLinks.length; i++) {
+            pattern = /facebook|twitter|linkedin|instagram|youtube|github/
+            check = pattern.test(parsedLinks[i])
+            if(check){
+                console.log(parsedLinks[i]);
+            }
+        }
 
       } else {
         console.log(err);
@@ -45,6 +58,7 @@ function getDomain(str) {
     return str.substring(n + 1, str.length);
 }
 
+// Finder function using Knwl
 var find = {
     emails: function(data) {
         knwlInstance.init(data);
@@ -52,7 +66,7 @@ var find = {
         if (foundItems.length === 0) {
           console.log("0 links found")
         } else {
-          console.log(foundItems);
+            return foundItems;
         }
     },
     links: function(data) {
@@ -61,7 +75,7 @@ var find = {
       if (foundItems.length === 0) {
         console.log("0 links found")
       } else {
-        console.log(foundItems);
+          return foundItems;
       }
     },
     phones: function(data) {
@@ -70,7 +84,7 @@ var find = {
       if (foundItems.length === 0) {
         console.log("0 phone numbers found")
       } else {
-        console.log(foundItems);
+          return foundItems;
       }
     }
 };

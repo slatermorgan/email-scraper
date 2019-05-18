@@ -18,24 +18,22 @@ request(url, function (err, res, html) {
         const $ = cheerio.load(html);
         const body = $("body");
 
+        dataStr = "";
 
-        // Parse all links from page
-        // dataStr = "";
-        //
-        // $("a").each(function (i, el) {
-        //     const link = $(el).attr("href");
-        //     dataStr += " " + link + " ";
-        // });
-        //
-        // webPageText = dataStr
-        webPageText = body.text();
+        $("a").each(function (i, el) {
+            const link = $(el).attr("href");
+            dataStr += " " + link + " ";
+        });
+
+        webPageLinks = dataStr
+
+        webPageText = body.html();
         console.log(webPageText)
-        knwlInstance.init(webPageText);
 
         // calls scraper methods
-        scraper.emails();
-        scraper.phones();
-        scraper.links();
+        find.emails(webPageText);
+        find.phones(webPageText);
+        find.links(webPageLinks);
 
       } else {
         console.log(err);
@@ -47,8 +45,9 @@ function getDomain(str) {
     return str.substring(n + 1, str.length);
 }
 
-var scraper = {
-    emails: function() {
+var find = {
+    emails: function(data) {
+        knwlInstance.init(data);
         var foundItems = knwlInstance.get('emails');
         if (foundItems.length === 0) {
           console.log("0 links found")
@@ -56,15 +55,17 @@ var scraper = {
           console.log(foundItems);
         }
     },
-    links: function() {
+    links: function(data) {
+      knwlInstance.init(data);
       var foundItems = knwlInstance.get('links');
       if (foundItems.length === 0) {
         console.log("0 links found")
       } else {
-        console.log(foundItems[0]);
+        console.log(foundItems);
       }
     },
-    phones: function() {
+    phones: function(data) {
+      knwlInstance.init(data);
       var foundItems = knwlInstance.get('phones');
       if (foundItems.length === 0) {
         console.log("0 phone numbers found")

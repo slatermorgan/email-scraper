@@ -16,7 +16,7 @@ var scrapedData = {
     linkedin: []
 };
 
-var emailAddress = "someone@canddi.com"
+var emailAddress = "someone@canddi.com/"
 var url = "https://www." + getDomain(emailAddress);
 scrapedData.url.push(url);
 
@@ -57,10 +57,11 @@ request(url, function (err, res, html) {
         for (var i=0; i<foundLinks.length; i++){
             parsedLinks.push(foundLinks[i]['link'])
         }
-
         parsedLinks = remDup(parsedLinks)
 
+
         socialSearch(parsedLinks);
+        phoneSearch(webPageText)
 
       } else {
         console.log(err);
@@ -77,13 +78,17 @@ function getDomain(str) {
 
 // Removes duplication in array
 function remDup(arr) {
-  let uniqueItems = {};
-  arr.forEach(function(i) {
-    if(!uniqueItems[i]) {
-      uniqueItems[i] = true;
+    if (arr === null){
+        console.log("ERR: duplication cant be perfomed on null");
+    } else {
+        let uniqueItems = {};
+        arr.forEach(function(i) {
+          if(!uniqueItems[i]) {
+            uniqueItems[i] = true;
+          }
+        });
+        return Object.keys(uniqueItems);
     }
-  });
-  return Object.keys(uniqueItems);
 }
 
 // Searches links for popular social sites
@@ -119,6 +124,14 @@ function socialSearch(data) {
             scrapedData.github.push(parsedLinks[i]);
         }
     }
+}
+
+function phoneSearch(data) {
+    phones = data.replace(/\s/g, "");
+    phoneExp = /44\d[\s\d-]{5,8}\d/g
+    phones = phones.match(phoneExp)
+    phones = remDup(phones)
+    scrapedData.phone.push(phones);
 }
 
 // Finder function using Knwl

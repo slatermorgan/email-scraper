@@ -3,7 +3,6 @@ const cheerio = require("cheerio"),
     Knwl = require("knwl.js");
 
 var knwlInstance = new Knwl("english"); //specifies language for Knwl
-
 var scrapedData = {
     url: [],
     email: [],
@@ -14,7 +13,6 @@ var scrapedData = {
     github: [],
     linkedin: []
 };
-
 var emailAddress = "someone@canddi.com"
 var url = "https://www." + getDomain(emailAddress);
 
@@ -52,7 +50,6 @@ request(url, function (err, res, html) {
             parsedEmails = remDup(parsedEmails);
             scrapedData.email = parsedEmails;
         }
-
         // extract links from knwl object and put in array
         parsedLinks = []
         if (foundLinks == null){
@@ -62,9 +59,8 @@ request(url, function (err, res, html) {
                 parsedLinks.push(foundLinks[i]['link']);
             }
             parsedLinks = remDup(parsedLinks);
+            socialSearch(parsedLinks);
         }
-
-        socialSearch(parsedLinks);
 
       } else {
         console.log(err);
@@ -77,7 +73,6 @@ function getDomain(email) {
     var n = email.indexOf("@");
     return email.substring(n + 1, email.length);
 }
-
 // Removes duplication in array
 function remDup(arr) {
     if (arr === null){
@@ -92,7 +87,6 @@ function remDup(arr) {
         return Object.keys(uniqueItems);
     }
 }
-
 // Searches links for popular social sites
 function socialSearch(data) {
     for (var i=0; i<data.length; i++) {
@@ -121,7 +115,6 @@ function socialSearch(data) {
         }
     }
 }
-
 // Finder functions (2 knwl and 1 own)
 var find = {
     emails: function(data) {

@@ -11,69 +11,71 @@ var scrapedData = {
     address: [],
     facebook: [],
     twitter: [],
-    instagram: [],
     github: [],
     linkedin: []
 };
 
-var emailAddress = "someone@canddi.com/"
+var emailAddress = "someone@canddi.com"
 var url = "https://www." + getDomain(emailAddress);
-scrapedData.url.push(url);
 
 // Request web domain
 request(url, function (err, res, html) {
     if (!err && res.statusCode == 200) {
 
-        // Cheerio Scraping
-        // Body
+        scrapedData.url.push(url);
+
+        // Cheerio
         const $ = cheerio.load(html);
+        // Get webpage body text
         const body = $("body");
-        // <a> tags html attr
-        dataStr = "";
+        webPageText = body.text();
+        // Get webpage <a> tags html attr
+        webPageHrefs = "";
         $("a").each(function (i, el) {
             const link = $(el).attr("href");
-            dataStr += " " + link + " ";
+            webPageHrefs += " " + link + " ";
         });
 
-        // webpage data
-        webPageLinks = dataStr
-        webPageHTML = body.html();
-        webPageText = body.text();
-
         // calls finder methods
-        foundEmails = find.emails(webPageHTML);
+        foundEmails = find.emails(webPageHrefs);
         foundPhones = find.phones(webPageText);
-        foundLinks = find.links(webPageLinks);
+        foundLinks = find.links(webPageHrefs);
 
-        // extract email from knwl object and put in array
+        // parse email from knwl object and put in array
         parsedEmails = []
-        for (var i=0; i<foundEmails.length; i++){
-            parsedEmails.push(foundEmails[i]['address'])
+        if (foundEmails == null){
+            console.log("ERR: cant perform parse on 0 emails");
+        } else {
+            for (var i=0; i<foundEmails.length; i++){
+                parsedEmails.push(foundEmails[i]['address']);
+            }
+            parsedEmails = remDup(parsedEmails);
+            scrapedData.email = parsedEmails;
         }
-        scrapedData.email = remDup(parsedEmails);
 
         // extract links from knwl object and put in array
         parsedLinks = []
-        for (var i=0; i<foundLinks.length; i++){
-            parsedLinks.push(foundLinks[i]['link'])
+        if (foundLinks == null){
+            console.log("ERR: cant perform parse on 0 links");
+        } else {
+            for (var i=0; i<foundLinks.length; i++){
+                parsedLinks.push(foundLinks[i]['link']);
+            }
+            parsedLinks = remDup(parsedLinks);
         }
-        parsedLinks = remDup(parsedLinks)
-
 
         socialSearch(parsedLinks);
-        phoneSearch(webPageText)
 
       } else {
         console.log(err);
       }
-      // could save to a JSON file here
+      // could save scrapedData to a JSON file here
       console.log(scrapedData);
   });
 
-
-function getDomain(str) {
-    var n = str.indexOf("@");
-    return str.substring(n + 1, str.length);
+function getDomain(email) {
+    var n = email.indexOf("@");
+    return email.substring(n + 1, email.length);
 }
 
 // Removes duplication in array
@@ -93,20 +95,17 @@ function remDup(arr) {
 
 // Searches links for popular social sites
 function socialSearch(data) {
-    // Social search
     for (var i=0; i<data.length; i++) {
 
         fbPattern = /facebook/
         twPattern = /twitter/
         liPattern = /linkedin/
-        inPattern = /instagram/
         gitPattern = /github/
 
-        fbcheck = fbPattern.test(data[i])
-        twcheck = twPattern.test(data[i])
-        licheck = liPattern.test(data[i])
-        incheck = inPattern.test(data[i])
-        gitcheck = gitPattern.test(data[i])
+        fbcheck = fbPattern.test(data[i]);
+        twcheck = twPattern.test(data[i]);
+        licheck = liPattern.test(data[i]);
+        gitcheck = gitPattern.test(data[i]);
 
         if(fbcheck){
             scrapedData.facebook.push(parsedLinks[i]);
@@ -117,32 +116,21 @@ function socialSearch(data) {
         if(licheck){
             scrapedData.linkedin.push(parsedLinks[i]);
         }
-        if(incheck){
-            scrapedData.instagram.push(parsedLinks[i]);
-        }
         if(gitcheck){
             scrapedData.github.push(parsedLinks[i]);
         }
     }
 }
 
-function phoneSearch(data) {
-    phones = data.replace(/\s/g, "");
-    phoneExp = /44\d[\s\d-]{5,8}\d/g
-    phones = phones.match(phoneExp)
-    phones = remDup(phones)
-    scrapedData.phone.push(phones);
-}
-
-// Finder function using Knwl
+// Finder functions (2 knwl and 1 own)
 var find = {
     emails: function(data) {
         knwlInstance.init(data);
         var foundItems = knwlInstance.get('emails');
         if (foundItems.length === 0) {
-          console.log("0 emails found")
+          console.log("0 emails found");
         } else {
-            console.log(foundItems.length + " emails found")
+            console.log(foundItems.length + " emails found");
             return foundItems;
         }
     },
@@ -150,20 +138,23 @@ var find = {
       knwlInstance.init(data);
       var foundItems = knwlInstance.get('links');
       if (foundItems.length === 0) {
-        console.log("0 links found")
+        console.log("0 links found");
       } else {
-          console.log(foundItems.length + " links found")
+          console.log(foundItems.length + " links found");
           return foundItems;
       }
     },
     phones: function(data) {
-      knwlInstance.init(data);
-      var foundItems = knwlInstance.get('phones');
-      if (foundItems.length === 0) {
-        console.log("0 phone numbers found")
-      } else {
-          return foundItems;
-          console.log(foundItems.length + " phone numbers found")
-      }
+        phones = data.replace(/\s/g, "");
+        phoneExp = /44\d[\s\d-]{8,8}\d/g
+        foundItems = phones.match(phoneExp);
+        countItems = phones.search(phoneExp);
+        if (foundItems == null){
+            console.log("0 phone numbers found");
+        } else {
+            console.log(countItems + " phone numbers found");
+            foundItems = remDup(foundItems);
+            scrapedData.phone.push(foundItems);
+        }
     }
 };
